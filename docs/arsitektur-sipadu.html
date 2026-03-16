@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIPADU — Arsitektur Sistem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--bg2:#0f1a14;--bg3:#132a1e;
+  --fg:#e8f5e9;--fg2:#a5d6a7;--fg3:#66bb6a;
+  --accent:#00e676;--accent2:#69f0ae;--accent3:#1b5e20;
+  --grid:rgba(0,230,118,0.04);--line:rgba(0,230,118,0.15);
+  --card:#0d1f15;--card-border:rgba(0,230,118,0.12);
+  --radius:12px;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Plus Jakarta Sans',sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--sans);color:var(--fg);background:var(--bg);
+  line-height:1.6;overflow-x:hidden;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent3);border-radius:3px}
+
+/* === HEADER === */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  position:relative;padding:2rem;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 600px 400px at 50% 40%,rgba(0,230,118,0.08),transparent);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.4rem 1rem;border-radius:100px;
+  background:rgba(0,230,118,0.08);border:1px solid var(--line);
+  font-family:var(--mono);font-size:.75rem;color:var(--accent2);
+  letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:2rem;
+  animation:fadeDown .8s ease both;
+}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero h1{
+  font-size:clamp(3rem,8vw,6rem);font-weight:800;
+  letter-spacing:-.03em;line-height:1;
+  background:linear-gradient(135deg,var(--fg) 0%,var(--accent2) 50%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fadeDown .8s .1s ease both;
+}
+.hero-sub{
+  font-size:clamp(1rem,2.5vw,1.5rem);color:var(--fg2);
+  margin-top:1rem;font-weight:300;
+  animation:fadeDown .8s .2s ease both;
+}
+.hero-meta{
+  display:flex;gap:2rem;margin-top:3rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeDown .8s .3s ease both;
+}
+.hero-meta-item{
+  display:flex;flex-direction:column;align-items:center;gap:.25rem;
+}
+.hero-meta-item .val{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--accent)}
+.hero-meta-item .lbl{font-size:.7rem;color:var(--fg2);text-transform:uppercase;letter-spacing:.1em}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* === NAV === */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,15,13,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--card-border);
+  padding:.75rem 2rem;
+  display:flex;gap:1rem;overflow-x:auto;justify-content:center;flex-wrap:wrap;
+}
+.nav a{
+  font-family:var(--mono);font-size:.75rem;color:var(--fg2);
+  text-decoration:none;padding:.4rem .8rem;border-radius:6px;
+  transition:all .2s;white-space:nowrap;letter-spacing:.02em;
+}
+.nav a:hover{color:var(--accent);background:rgba(0,230,118,0.08)}
+
+/* === SECTIONS === */
+.section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+.section-header{margin-bottom:3rem}
+.section-num{
+  font-family:var(--mono);font-size:.75rem;color:var(--accent);
+  letter-spacing:.15em;text-transform:uppercase;
+  display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;
+}
+.section-num::after{content:'';flex:1;height:1px;background:var(--line)}
+.section-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;letter-spacing:-.02em;color:var(--fg)}
+.section-desc{color:var(--fg2);margin-top:.5rem;max-width:700px;font-weight:300}
+
+/* === CARDS === */
+.card-grid{display:grid;gap:1.5rem}
+.card-grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
+.card-grid.cols-3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card-grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+.card{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:1.5rem;
+  position:relative;overflow:hidden;
+  transition:all .3s;
+}
+.card:hover{border-color:rgba(0,230,118,0.3);transform:translateY(-2px)}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.card:hover::before{opacity:1}
+.card-icon{
+  width:40px;height:40px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;margin-bottom:1rem;
+  background:rgba(0,230,118,0.1);border:1px solid var(--line);
+}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--fg)}
+.card p{font-size:.85rem;color:var(--fg2);line-height:1.7}
+.card-tag{
+  display:inline-block;font-family:var(--mono);font-size:.65rem;
+  padding:.15rem .5rem;border-radius:4px;margin-top:.75rem;
+  background:rgba(0,230,118,0.08);color:var(--accent2);
+  border:1px solid var(--line);
+}
+
+/* === TECH STACK === */
+.stack-row{
+  display:flex;align-items:center;padding:1rem 1.5rem;
+  border-bottom:1px solid var(--card-border);
+  transition:background .2s;
+}
+.stack-row:hover{background:rgba(0,230,118,0.03)}
+.stack-row:last-child{border-bottom:none}
+.stack-label{
+  width:180px;flex-shrink:0;
+  font-family:var(--mono);font-size:.75rem;color:var(--fg2);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.stack-value{font-weight:600;color:var(--fg);flex:1}
+.stack-ver{
+  font-family:var(--mono);font-size:.75rem;
+  padding:.2rem .6rem;border-radius:4px;
+  background:rgba(0,230,118,0.08);color:var(--accent2);
+}
+
+/* === ARCHITECTURE DIAGRAM === */
+.arch-diagram{
+  display:grid;gap:2rem;
+  grid-template-columns:1fr;
+}
+.arch-layer{
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.arch-layer-header{
+  padding:1rem 1.5rem;
+  display:flex;align-items:center;gap:1rem;
+  border-bottom:1px solid var(--card-border);
+}
+.arch-layer-num{
+  font-family:var(--mono);font-size:.65rem;font-weight:700;
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:var(--bg);
+}
+.arch-layer-name{font-weight:700;font-size:.95rem}
+.arch-layer-tech{font-family:var(--mono);font-size:.7rem;color:var(--accent2);margin-left:auto}
+.arch-layer-body{
+  padding:1.5rem;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:1rem;
+}
+.arch-item{
+  padding:.75rem 1rem;border-radius:8px;
+  background:rgba(0,230,118,0.03);border:1px solid rgba(0,230,118,0.08);
+  font-size:.8rem;
+}
+.arch-item strong{display:block;color:var(--fg);font-size:.85rem;margin-bottom:.25rem}
+.arch-item span{color:var(--fg2);font-size:.75rem}
+
+/* === FLOW DIAGRAM === */
+.flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:center;padding:2rem 0}
+.flow-step{
+  padding:.6rem 1.2rem;border-radius:8px;
+  font-family:var(--mono);font-size:.75rem;font-weight:600;
+  background:var(--card);border:1px solid var(--card-border);
+  color:var(--fg);white-space:nowrap;
+  transition:all .2s;
+}
+.flow-step:hover{border-color:var(--accent);color:var(--accent)}
+.flow-arrow{color:var(--accent);font-size:1.2rem;flex-shrink:0}
+.flow-step.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.flow-step.danger{border-color:#ef5350;color:#ef5350}
+
+/* === TABLE === */
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.data-table th{
+  font-family:var(--mono);font-size:.7rem;color:var(--accent2);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding:.75rem 1rem;text-align:left;
+  border-bottom:2px solid var(--line);
+}
+.data-table td{padding:.75rem 1rem;border-bottom:1px solid var(--card-border);color:var(--fg2)}
+.data-table tr:hover td{background:rgba(0,230,118,0.03);color:var(--fg)}
+.data-table .mono{font-family:var(--mono);font-size:.8rem;color:var(--accent2)}
+.data-table .badge{
+  display:inline-block;padding:.15rem .5rem;border-radius:4px;
+  font-family:var(--mono);font-size:.65rem;font-weight:600;
+}
+.badge-pub{background:rgba(76,175,80,0.15);color:#66bb6a}
+.badge-int{background:rgba(33,150,243,0.15);color:#42a5f5}
+.badge-con{background:rgba(239,83,80,0.15);color:#ef5350}
+.badge-yes{background:rgba(0,230,118,0.15);color:var(--accent)}
+.badge-imm{background:rgba(255,152,0,0.15);color:#ffa726}
+
+/* === PERMISSION MATRIX === */
+.perm-matrix{width:100%;border-collapse:collapse;font-size:.8rem}
+.perm-matrix th{
+  font-family:var(--mono);font-size:.65rem;
+  padding:.6rem .8rem;text-align:center;
+  color:var(--accent2);text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:2px solid var(--line);
+}
+.perm-matrix th:first-child{text-align:left}
+.perm-matrix td{padding:.5rem .8rem;text-align:center;border-bottom:1px solid var(--card-border)}
+.perm-matrix td:first-child{text-align:left;font-family:var(--mono);font-size:.75rem;color:var(--fg2)}
+.perm-matrix tr:hover td{background:rgba(0,230,118,0.03)}
+.check{color:var(--accent);font-weight:700}
+.cross{color:rgba(255,255,255,0.15)}
+
+/* === CODE BLOCK === */
+.code-block{
+  background:#060d09;border:1px solid var(--card-border);
+  border-radius:var(--radius);padding:1.5rem;
+  font-family:var(--mono);font-size:.8rem;line-height:1.8;
+  overflow-x:auto;color:var(--fg2);
+}
+.code-block .kw{color:#69f0ae}
+.code-block .str{color:#a5d6a7}
+.code-block .cmt{color:#4a6e54;font-style:italic}
+.code-block .fn{color:#80cbc4}
+.code-block .num{color:#ffcc80}
+
+/* === STAT ROW === */
+.stat-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1rem;margin:2rem 0;
+}
+.stat-item{
+  text-align:center;padding:1.5rem 1rem;
+  background:var(--card);border:1px solid var(--card-border);
+  border-radius:var(--radius);
+}
+.stat-item .num{
+  font-family:var(--mono);font-size:2rem;font-weight:700;
+  color:var(--accent);display:block;
+}
+.stat-item .label{font-size:.7rem;color:var(--fg2);text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem}
+
+/* === FOOTER === */
+.footer{
+  text-align:center;padding:4rem 2rem;
+  border-top:1px solid var(--card-border);
+  color:var(--fg2);font-size:.8rem;
+}
+.footer strong{color:var(--accent2)}
+
+/* === RESPONSIVE === */
+@media(max-width:768px){
+  .stack-row{flex-direction:column;align-items:flex-start;gap:.5rem}
+  .stack-label{width:auto}
+  .arch-layer-tech{display:none}
+  .nav{justify-content:flex-start}
+  .perm-matrix{font-size:.65rem}
+  .perm-matrix th,.perm-matrix td{padding:.4rem}
+}
+
+/* === ANIMATIONS === */
+.reveal{opacity:0;transform:translateY(30px);transition:all .6s ease}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span>Technical Architecture Document</span></div>
+  <h1>SIPADU</h1>
+  <p class="hero-sub">Sistem Informasi Pengaduan Layanan &mdash; Pengadilan Agama Penajam</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="val">10</span><span class="lbl">Database Tables</span></div>
+    <div class="hero-meta-item"><span class="val">24</span><span class="lbl">Pages</span></div>
+    <div class="hero-meta-item"><span class="val">77</span><span class="lbl">Test Cases</span></div>
+    <div class="hero-meta-item"><span class="val">94.6%</span><span class="lbl">SPBE Compliance</span></div>
+    <div class="hero-meta-item"><span class="val">4</span><span class="lbl">User Roles</span></div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="#stack">Tech Stack</a>
+  <a href="#architecture">Arsitektur</a>
+  <a href="#database">Database</a>
+  <a href="#flow">Alur Status</a>
+  <a href="#rbac">RBAC</a>
+  <a href="#security">Keamanan</a>
+  <a href="#api">Endpoint</a>
+  <a href="#frontend">Frontend</a>
+  <a href="#notification">Notifikasi</a>
+  <a href="#spbe">SPBE</a>
+</nav>
+
+<!-- TECH STACK -->
+<section class="section" id="stack">
+  <div class="section-header reveal">
+    <div class="section-num">01 &mdash; Teknologi</div>
+    <h2 class="section-title">Tech Stack</h2>
+    <p class="section-desc">Komponen teknologi yang digunakan untuk membangun SIPADU</p>
+  </div>
+  <div class="card reveal" style="padding:0;overflow:hidden">
+    <div class="stack-row"><span class="stack-label">Backend</span><span class="stack-value">Laravel</span><span class="stack-ver">v12</span></div>
+    <div class="stack-row"><span class="stack-label">PHP</span><span class="stack-value">PHP</span><span class="stack-ver">8.3+</span></div>
+    <div class="stack-row"><span class="stack-label">Frontend</span><span class="stack-value">React (TypeScript)</span><span class="stack-ver">v19</span></div>
+    <div class="stack-row"><span class="stack-label">Bridge</span><span class="stack-value">Inertia.js</span><span class="stack-ver">v2</span></div>
+    <div class="stack-row"><span class="stack-label">Styling</span><span class="stack-value">Tailwind CSS</span><span class="stack-ver">v4</span></div>
+    <div class="stack-row"><span class="stack-label">Database</span><span class="stack-value">MySQL</span><span class="stack-ver">8.0+</span></div>
+    <div class="stack-row"><span class="stack-label">Auth</span><span class="stack-value">Laravel Sanctum</span><span class="stack-ver">session-based</span></div>
+    <div class="stack-row"><span class="stack-label">Authorization</span><span class="stack-value">Spatie Laravel Permission</span><span class="stack-ver">v6</span></div>
+    <div class="stack-row"><span class="stack-label">Audit</span><span class="stack-value">Spatie Activitylog</span><span class="stack-ver">v4</span></div>
+    <div class="stack-row"><span class="stack-label">Queue</span><span class="stack-value">Laravel Queue</span><span class="stack-ver">database driver</span></div>
+    <div class="stack-row"><span class="stack-label">WhatsApp</span><span class="stack-value">Fonnte API</span><span class="stack-ver">custom channel</span></div>
+    <div class="stack-row"><span class="stack-label">Timezone</span><span class="stack-value">Asia/Jakarta</span><span class="stack-ver">WIB (UTC+8)</span></div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="section" id="architecture">
+  <div class="section-header reveal">
+    <div class="section-num">02 &mdash; Arsitektur</div>
+    <h2 class="section-title">Arsitektur Berlapis</h2>
+    <p class="section-desc">Arsitektur 4 layer: Presentasi &rarr; Aplikasi &rarr; Domain &rarr; Infrastruktur</p>
+  </div>
+  <div class="arch-diagram">
+    <div class="arch-layer reveal">
+      <div class="arch-layer-header">
+        <span class="arch-layer-num">1</span>
+        <span class="arch-layer-name">Presentation Layer</span>
+        <span class="arch-layer-tech">React 19 + Inertia.js v2 + Tailwind CSS</span>
+      </div>
+      <div class="arch-layer-body">
+        <div class="arch-item"><strong>24 Pages</strong><span>Landing, Form Pengaduan, Dashboard (4 role), Admin CRUD, Auth</span></div>
+        <div class="arch-item"><strong>10+ Components</strong><span>StatusTimeline, SlaIndicator, DataTable, FileUploadZone, AuditLogViewer</span></div>
+        <div class="arch-item"><strong>3 Layouts</strong><span>GuestLayout, AuthenticatedLayout, AdminLayout</span></div>
+        <div class="arch-item"><strong>Hooks</strong><span>usePermission, useFlash — shared data via Inertia</span></div>
+      </div>
+    </div>
+    <div class="arch-layer reveal">
+      <div class="arch-layer-header">
+        <span class="arch-layer-num">2</span>
+        <span class="arch-layer-name">Application Layer</span>
+        <span class="arch-layer-tech">Laravel Controllers + Form Requests + Middleware</span>
+      </div>
+      <div class="arch-layer-body">
+        <div class="arch-item"><strong>11 Controllers</strong><span>Public (Form, Track), Masyarakat, Petugas, Panitera, Admin (5 controller)</span></div>
+        <div class="arch-item"><strong>5 Form Requests</strong><span>StoreComplaint, AssignComplaint, UpdateStatus, StoreUser, UpdateUser</span></div>
+        <div class="arch-item"><strong>4 Middleware</strong><span>AuditMiddleware, CheckAccountLockout, HandleInertia, PasswordExpiry</span></div>
+        <div class="arch-item"><strong>4 Notifications</strong><span>Submitted, StatusChanged, Assigned, SlaWarning — queued + email + WA</span></div>
+      </div>
+    </div>
+    <div class="arch-layer reveal">
+      <div class="arch-layer-header">
+        <span class="arch-layer-num">3</span>
+        <span class="arch-layer-name">Domain Layer</span>
+        <span class="arch-layer-tech">Action Classes + Services + Enums + Policies</span>
+      </div>
+      <div class="arch-layer-body">
+        <div class="arch-item"><strong>6 Actions</strong><span>CreateComplaint, AssignComplaint, UpdateStatus, Escalate, GenerateTicket, StoreAttachments</span></div>
+        <div class="arch-item"><strong>3 Services</strong><span>SlaService (deadline, overdue), AuditService (immutable log), EncryptionService (NIK)</span></div>
+        <div class="arch-item"><strong>3 Enums</strong><span>ComplaintStatusEnum (8 status), PriorityEnum (4 level), DataClassificationEnum</span></div>
+        <div class="arch-item"><strong>2 Policies</strong><span>ComplaintPolicy (view, assign, respond, confidential), UserPolicy (CRUD admin only)</span></div>
+      </div>
+    </div>
+    <div class="arch-layer reveal">
+      <div class="arch-layer-header">
+        <span class="arch-layer-num">4</span>
+        <span class="arch-layer-name">Infrastructure Layer</span>
+        <span class="arch-layer-tech">Eloquent ORM + MySQL + File Storage + Queue</span>
+      </div>
+      <div class="arch-layer-body">
+        <div class="arch-item"><strong>10 Models</strong><span>User, Complaint, Category, Status, Attachment, Disposition, AuditLog, Setting, Holiday, Notification</span></div>
+        <div class="arch-item"><strong>MySQL 8.0+</strong><span>utf8mb4, soft deletes, JSON columns, foreign keys, indexes</span></div>
+        <div class="arch-item"><strong>File Storage</strong><span>Private disk, encrypted at-rest (AES-256), SHA-256 checksum</span></div>
+        <div class="arch-item"><strong>Queue</strong><span>Database driver, email + WA notifications, SLA check command (daily cron)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATABASE -->
+<section class="section" id="database">
+  <div class="section-header reveal">
+    <div class="section-num">03 &mdash; Basis Data</div>
+    <h2 class="section-title">Skema Database</h2>
+    <p class="section-desc">10 tabel dengan klasifikasi data SPBE dan relasi foreign key</p>
+  </div>
+  <div class="card reveal" style="overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr><th>Tabel</th><th>Kolom Utama</th><th>Klasifikasi</th><th>Soft Delete</th><th>Keterangan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">users</td><td>nik (encrypted), name, email, phone, role, failed_login_count, locked_until</td><td><span class="badge badge-con">RAHASIA</span></td><td><span class="badge badge-yes">Ya</span></td><td>Data pengguna + NIK terenkripsi</td></tr>
+        <tr><td class="mono">complaints</td><td>ticket_no, category_id, title, description, status, priority, assigned_to, sla_deadline, data_classification</td><td><span class="badge badge-int">INTERNAL</span></td><td><span class="badge badge-yes">Ya</span></td><td>Tabel utama pengaduan</td></tr>
+        <tr><td class="mono">complaint_categories</td><td>name, code, sla_days, is_active</td><td><span class="badge badge-pub">PUBLIK</span></td><td>&mdash;</td><td>8 kategori pengaduan</td></tr>
+        <tr><td class="mono">complaint_statuses</td><td>complaint_id, status, note, updated_by</td><td><span class="badge badge-int">INTERNAL</span></td><td>&mdash;</td><td>Riwayat status (timeline)</td></tr>
+        <tr><td class="mono">complaint_attachments</td><td>file_path, original_name, mime_type, file_size, checksum</td><td><span class="badge badge-con">RAHASIA</span></td><td>&mdash;</td><td>File terenkripsi + SHA-256</td></tr>
+        <tr><td class="mono">complaint_dispositions</td><td>complaint_id, from_user, to_user, note</td><td><span class="badge badge-int">INTERNAL</span></td><td>&mdash;</td><td>Disposisi antar unit</td></tr>
+        <tr><td class="mono">audit_logs</td><td>user_id, user_ip, user_agent, action, subject_type, subject_id, old_values, new_values, request_id</td><td><span class="badge badge-con">RAHASIA</span></td><td><span class="badge badge-imm">IMMUTABLE</span></td><td>Log audit — tidak bisa diubah/dihapus</td></tr>
+        <tr><td class="mono">system_settings</td><td>key, value, group, updated_by</td><td><span class="badge badge-int">INTERNAL</span></td><td>&mdash;</td><td>Konfigurasi sistem</td></tr>
+        <tr><td class="mono">holidays</td><td>date, name</td><td><span class="badge badge-pub">PUBLIK</span></td><td>&mdash;</td><td>Kalender libur untuk SLA</td></tr>
+        <tr><td class="mono">notifications</td><td>notifiable_type, notifiable_id, channel, message, sent_at, read_at</td><td><span class="badge badge-int">INTERNAL</span></td><td>&mdash;</td><td>Riwayat notifikasi</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section class="section" id="flow">
+  <div class="section-header reveal">
+    <div class="section-num">04 &mdash; Alur Proses</div>
+    <h2 class="section-title">Status Flow Pengaduan</h2>
+    <p class="section-desc">8 status dengan transisi tervalidasi dan mekanisme eskalasi SLA</p>
+  </div>
+  <div class="card reveal">
+    <h3 style="margin-bottom:1rem;color:var(--fg2);font-size:.85rem;font-family:var(--mono)">// Alur utama</h3>
+    <div class="flow">
+      <span class="flow-step active">Dikirim</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Diverifikasi</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Ditugaskan</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Dalam Proses</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Dijawab</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="border-color:var(--accent);color:var(--accent)">Selesai</span>
+    </div>
+    <h3 style="margin:1.5rem 0 1rem;color:var(--fg2);font-size:.85rem;font-family:var(--mono)">// Alur alternatif</h3>
+    <div class="flow">
+      <span class="flow-step">Dikirim</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step danger">Ditolak</span>
+      <span style="margin:0 2rem;color:var(--fg2)">|</span>
+      <span class="flow-step">Dijawab</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step" style="border-color:#ffa726;color:#ffa726">Dibuka Kembali</span><span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Dalam Proses</span>
+    </div>
+  </div>
+  <div class="stat-row reveal">
+    <div class="stat-item"><span class="num">5</span><span class="label">Hari — INFO SLA</span></div>
+    <div class="stat-item"><span class="num">14</span><span class="label">Hari — Standar SLA</span></div>
+    <div class="stat-item"><span class="num">60</span><span class="label">Hari — PEG SLA</span></div>
+    <div class="stat-item"><span class="num">3</span><span class="label">Level Eskalasi</span></div>
+  </div>
+  <div class="card reveal">
+    <h3 style="margin-bottom:1rem;font-size:.9rem">Mekanisme Eskalasi SLA</h3>
+    <div class="code-block">
+<span class="cmt">// Peringatan otomatis berdasarkan persentase SLA</span>
+<span class="kw">if</span> (percentage &lt; <span class="num">75</span>) &rarr; <span class="str">"HIJAU"</span>    <span class="cmt">// Normal — tidak ada aksi</span>
+<span class="kw">if</span> (percentage &ge; <span class="num">75</span>) &rarr; <span class="str">"KUNING"</span>   <span class="cmt">// Notifikasi ke petugas</span>
+<span class="kw">if</span> (percentage &ge; <span class="num">90</span>) &rarr; <span class="str">"MERAH"</span>    <span class="cmt">// Eskalasi ke Panitera</span>
+<span class="kw">if</span> (isOverdue)        &rarr; <span class="str">"TERLAMBAT"</span> <span class="cmt">// Eskalasi ke Ketua PA</span>
+
+<span class="cmt">// Hari kerja = exclude Sabtu, Minggu, hari libur nasional</span>
+<span class="fn">SlaService</span>::<span class="fn">calculateDeadline</span>(startDate, slaDays)
+<span class="fn">SlaService</span>::<span class="fn">getRemainingDays</span>(complaint)
+<span class="fn">SlaService</span>::<span class="fn">getPercentageUsed</span>(complaint)
+    </div>
+  </div>
+</section>
+
+<!-- RBAC -->
+<section class="section" id="rbac">
+  <div class="section-header reveal">
+    <div class="section-num">05 &mdash; Otorisasi</div>
+    <h2 class="section-title">Role-Based Access Control</h2>
+    <p class="section-desc">4 peran dengan 19 permission granular menggunakan Spatie Laravel Permission</p>
+  </div>
+  <div class="card-grid cols-4 reveal">
+    <div class="card" style="border-top:3px solid var(--accent)"><div class="card-icon">👤</div><h3>Masyarakat</h3><p>Ajukan & lacak pengaduan sendiri</p><span class="card-tag">3 permissions</span></div>
+    <div class="card" style="border-top:3px solid #42a5f5"><div class="card-icon">🎧</div><h3>Petugas Layanan</h3><p>Tangani pengaduan yang ditugaskan</p><span class="card-tag">5 permissions</span></div>
+    <div class="card" style="border-top:3px solid #ffa726"><div class="card-icon">⚖️</div><h3>Panitera</h3><p>Awasi, tugaskan, eskalasi</p><span class="card-tag">10 permissions</span></div>
+    <div class="card" style="border-top:3px solid #ef5350"><div class="card-icon">🛡️</div><h3>Administrator</h3><p>Akses penuh ke seluruh sistem</p><span class="card-tag">19 permissions</span></div>
+  </div>
+  <div class="card reveal" style="margin-top:1.5rem;overflow-x:auto">
+    <table class="perm-matrix">
+      <thead><tr><th>Permission</th><th>Admin</th><th>Panitera</th><th>Petugas</th><th>Masyarakat</th></tr></thead>
+      <tbody>
+        <tr><td>complaints.create</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>complaints.view.own</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>complaints.view.all</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>complaints.assign</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>complaints.update.status</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td></tr>
+        <tr><td>complaints.respond</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td></tr>
+        <tr><td>complaints.delete</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>users.manage</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>audit_log.view</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>settings.manage</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+        <tr><td>reports.export</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="section" id="security">
+  <div class="section-header reveal">
+    <div class="section-num">06 &mdash; Keamanan</div>
+    <h2 class="section-title">Arsitektur Keamanan</h2>
+    <p class="section-desc">Implementasi keamanan sesuai Perpres 95/2018, BSSN 4/2021, dan SNI ISO 27001</p>
+  </div>
+  <div class="card-grid cols-3 reveal">
+    <div class="card"><div class="card-icon">🔐</div><h3>Enkripsi NIK</h3><p>AES-256-CBC via Laravel Crypt. NIK dienkripsi sebelum disimpan ke database sesuai UU PDP 27/2022.</p><span class="card-tag">at-rest encryption</span></div>
+    <div class="card"><div class="card-icon">📎</div><h3>File Security</h3><p>Lampiran dienkripsi at-rest, disimpan di private disk, dengan SHA-256 checksum per file.</p><span class="card-tag">max 10MB · 5 files</span></div>
+    <div class="card"><div class="card-icon">🔑</div><h3>Session Auth</h3><p>Laravel Sanctum session-based. Cookie HttpOnly + Secure + SameSite. CSRF otomatis via Inertia.</p><span class="card-tag">sanctum session</span></div>
+    <div class="card"><div class="card-icon">🚫</div><h3>Account Lockout</h3><p>Otomatis setelah 5 gagal login, durasi 30 menit. Semua percobaan dicatat ke audit log.</p><span class="card-tag">5 attempts · 30 min</span></div>
+    <div class="card"><div class="card-icon">📝</div><h3>Immutable Audit</h3><p>Tabel audit_logs tidak dapat diubah atau dihapus. Mencatat: siapa, kapan, dari mana, apa, sebelum/sesudah.</p><span class="card-tag">11 fields · immutable</span></div>
+    <div class="card"><div class="card-icon">🗑️</div><h3>Soft Delete</h3><p>Seluruh model utama menggunakan soft delete. Data tidak pernah dihapus permanen — SPBE compliance.</p><span class="card-tag">no hard deletes</span></div>
+    <div class="card"><div class="card-icon">🔤</div><h3>Password Policy</h3><p>Min 8 karakter, huruf kapital, angka, simbol. Peringatan kedaluwarsa 90 hari (konfigurasi).</p><span class="card-tag">strong password</span></div>
+    <div class="card"><div class="card-icon">🏷️</div><h3>Data Classification</h3><p>Setiap tabel dan record ditandai: PUBLIK / INTERNAL / RAHASIA. Akses difilter berdasarkan role.</p><span class="card-tag">3 levels</span></div>
+    <div class="card"><div class="card-icon">🆔</div><h3>Request Tracing</h3><p>Setiap response menyertakan header X-Request-ID (UUID) untuk traceability sesuai BSSN.</p><span class="card-tag">uuid per request</span></div>
+  </div>
+</section>
+
+<!-- API ENDPOINTS -->
+<section class="section" id="api">
+  <div class="section-header reveal">
+    <div class="section-num">07 &mdash; Endpoint</div>
+    <h2 class="section-title">API Endpoints</h2>
+    <p class="section-desc">Semua endpoint menggunakan Inertia.js (server-side rendering, bukan REST API tradisional)</p>
+  </div>
+  <div class="card reveal" style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>Method</th><th>URL</th><th>Auth</th><th>Deskripsi</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-pub">GET</span></td><td class="mono">/</td><td>Publik</td><td>Landing page</td></tr>
+        <tr><td><span class="badge badge-pub">GET</span></td><td class="mono">/pengaduan/buat</td><td>Publik</td><td>Formulir pengaduan</td></tr>
+        <tr><td><span class="badge badge-yes">POST</span></td><td class="mono">/pengaduan</td><td>Publik</td><td>Kirim pengaduan baru</td></tr>
+        <tr><td><span class="badge badge-pub">GET</span></td><td class="mono">/pengaduan/cek</td><td>Publik</td><td>Lacak pengaduan</td></tr>
+        <tr><td><span class="badge badge-int">GET</span></td><td class="mono">/dashboard</td><td>masyarakat</td><td>Dashboard masyarakat</td></tr>
+        <tr><td><span class="badge badge-int">GET</span></td><td class="mono">/petugas/dashboard</td><td>petugas</td><td>Dashboard petugas</td></tr>
+        <tr><td><span class="badge badge-imm">PATCH</span></td><td class="mono">/petugas/pengaduan/{id}/status</td><td>petugas</td><td>Update status pengaduan</td></tr>
+        <tr><td><span class="badge badge-int">GET</span></td><td class="mono">/panitera/dashboard</td><td>panitera</td><td>Dashboard panitera</td></tr>
+        <tr><td><span class="badge badge-yes">POST</span></td><td class="mono">/panitera/pengaduan/{id}/assign</td><td>panitera</td><td>Tugaskan ke petugas</td></tr>
+        <tr><td><span class="badge badge-con">GET</span></td><td class="mono">/admin/dashboard</td><td>admin</td><td>Dashboard admin</td></tr>
+        <tr><td><span class="badge badge-con">CRUD</span></td><td class="mono">/admin/users/*</td><td>admin</td><td>Manajemen pengguna</td></tr>
+        <tr><td><span class="badge badge-con">CRUD</span></td><td class="mono">/admin/categories/*</td><td>admin</td><td>Manajemen kategori</td></tr>
+        <tr><td><span class="badge badge-con">GET</span></td><td class="mono">/admin/audit-logs</td><td>admin</td><td>Audit log viewer</td></tr>
+        <tr><td><span class="badge badge-con">GET/PUT</span></td><td class="mono">/admin/settings</td><td>admin</td><td>Pengaturan sistem</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FRONTEND -->
+<section class="section" id="frontend">
+  <div class="section-header reveal">
+    <div class="section-num">08 &mdash; Frontend</div>
+    <h2 class="section-title">Struktur Frontend</h2>
+    <p class="section-desc">24 halaman React + TypeScript, mobile-first, WCAG 2.1 AA</p>
+  </div>
+  <div class="card-grid cols-2 reveal">
+    <div class="card"><h3>📄 Halaman Publik</h3><p>Welcome (landing), Pengaduan/Buat (formulir 14 field), Pengaduan/Cek (lacak tiket)</p><span class="card-tag">3 pages · no auth</span></div>
+    <div class="card"><h3>🏠 Dashboard Masyarakat</h3><p>Daftar pengaduan sendiri, detail dengan timeline, buat pengaduan baru</p><span class="card-tag">1 page</span></div>
+    <div class="card"><h3>🎧 Dashboard Petugas</h3><p>Pengaduan yang ditugaskan, SLA indicators, form respons</p><span class="card-tag">1 page</span></div>
+    <div class="card"><h3>⚖️ Dashboard Panitera</h3><p>Semua pengaduan, filter, assign, disposisi, eskalasi</p><span class="card-tag">1 page</span></div>
+    <div class="card"><h3>🛡️ Dashboard Admin</h3><p>Statistik, semua pengaduan, manajemen pengguna, kategori, settings, audit log</p><span class="card-tag">10 pages</span></div>
+    <div class="card"><h3>🔐 Auth Pages</h3><p>Login, Register, Forgot Password, Reset Password — semua Bahasa Indonesia</p><span class="card-tag">4 pages</span></div>
+  </div>
+  <div class="card reveal" style="margin-top:1.5rem">
+    <h3 style="margin-bottom:1rem;font-size:.9rem">Komponen Reusable</h3>
+    <div class="code-block">
+<span class="cmt">// 10+ komponen yang digunakan di seluruh halaman</span>
+&lt;<span class="fn">ComplaintStatusTimeline</span> /&gt;  <span class="cmt">// Timeline vertikal status</span>
+&lt;<span class="fn">SlaIndicator</span> /&gt;             <span class="cmt">// Badge hijau/kuning/merah + sisa hari</span>
+&lt;<span class="fn">DataTable</span> /&gt;                <span class="cmt">// Sortable, filterable, paginated</span>
+&lt;<span class="fn">FileUploadZone</span> /&gt;           <span class="cmt">// Drag-drop, validasi, progress</span>
+&lt;<span class="fn">AuditLogViewer</span> /&gt;           <span class="cmt">// Read-only, expandable rows</span>
+&lt;<span class="fn">PrintableComplaintCard</span> /&gt;   <span class="cmt">// Tanda terima cetak</span>
+&lt;<span class="fn">ComplaintCard</span> /&gt;             <span class="cmt">// Kartu ringkasan pengaduan</span>
+&lt;<span class="fn">StatusBadge</span> /&gt;              <span class="cmt">// Badge status berwarna</span>
+&lt;<span class="fn">StatsCard</span> /&gt;                <span class="cmt">// Kartu statistik dashboard</span>
+&lt;<span class="fn">FlashAlert</span> /&gt;               <span class="cmt">// Alert otomatis dari Inertia flash</span>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICATION -->
+<section class="section" id="notification">
+  <div class="section-header reveal">
+    <div class="section-num">09 &mdash; Notifikasi</div>
+    <h2 class="section-title">Sistem Notifikasi</h2>
+    <p class="section-desc">Notifikasi queued via email dan WhatsApp (Fonnte API)</p>
+  </div>
+  <div class="card reveal" style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>Event</th><th>Penerima</th><th>Email</th><th>WhatsApp</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr><td>Pengaduan dikirim</td><td>Pelapor</td><td class="check">✓</td><td class="check">✓</td><td class="mono">ComplaintSubmittedNotification</td></tr>
+        <tr><td>Status berubah</td><td>Pelapor</td><td class="check">✓</td><td class="check">✓</td><td class="mono">ComplaintStatusChangedNotification</td></tr>
+        <tr><td>Ditugaskan</td><td>Petugas</td><td class="check">✓</td><td class="cross">—</td><td class="mono">ComplaintAssignedNotification</td></tr>
+        <tr><td>SLA 75%</td><td>Petugas</td><td class="check">✓</td><td class="cross">—</td><td class="mono">SlaWarningNotification</td></tr>
+        <tr><td>SLA 90%</td><td>Panitera</td><td class="check">✓</td><td class="cross">—</td><td class="mono">SlaWarningNotification</td></tr>
+        <tr><td>SLA terlampaui</td><td>Panitera + Admin</td><td class="check">✓</td><td class="cross">—</td><td class="mono">SlaWarningNotification</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SPBE -->
+<section class="section" id="spbe">
+  <div class="section-header reveal">
+    <div class="section-num">10 &mdash; Kepatuhan</div>
+    <h2 class="section-title">Kepatuhan SPBE</h2>
+    <p class="section-desc">94,6% item wajib terpenuhi berdasarkan Perpres 95/2018</p>
+  </div>
+  <div class="stat-row reveal">
+    <div class="stat-item"><span class="num">62</span><span class="label">Compliant</span></div>
+    <div class="stat-item"><span class="num">3</span><span class="label">Partial</span></div>
+    <div class="stat-item"><span class="num">1</span><span class="label">N/A</span></div>
+    <div class="stat-item"><span class="num">3</span><span class="label">Pending</span></div>
+    <div class="stat-item"><span class="num" style="font-size:1.5rem">69</span><span class="label">Total Items</span></div>
+  </div>
+  <div class="card-grid cols-2 reveal">
+    <div class="card"><h3>✅ Arsitektur SPBE</h3><p>6 domain terpenuhi: proses bisnis, data, infrastruktur, aplikasi, keamanan, layanan</p><span class="card-tag">Perpres 95/2018</span></div>
+    <div class="card"><h3>✅ Keamanan BSSN</h3><p>9 domain: autentikasi, sesi, kontrol akses, input validation, logging, kriptografi, API, konfigurasi, file</p><span class="card-tag">BSSN 4/2021</span></div>
+    <div class="card"><h3>✅ Residensi Data</h3><p>Hosting wajib di data center Indonesia. Rekomendasi: Biznet Gio, IDCloudHost, Telkom Sigma, PDN</p><span class="card-tag">PP 71/2019</span></div>
+    <div class="card"><h3>✅ Proteksi Data Pribadi</h3><p>NIK terenkripsi, klasifikasi data, soft delete, audit trail — sesuai UU PDP 27/2022</p><span class="card-tag">UU PDP 27/2022</span></div>
+    <div class="card"><h3>✅ Standar Pelayanan</h3><p>Mekanisme pengaduan terstandar, SLA, pelacakan, transparansi — sesuai SK KMA 026/2012</p><span class="card-tag">SK KMA 026/2012</span></div>
+    <div class="card"><h3>✅ Evaluasi SPBE</h3><p>Siap diaudit: dokumentasi lengkap, log tersedia, konfigurasi terdokumentasi. Target: indeks SPBE "Baik"</p><span class="card-tag">PermenPANRB 59/2020</span></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p><strong>SIPADU</strong> &mdash; Sistem Informasi Pengaduan Layanan</p>
+  <p style="margin-top:.5rem">Pengadilan Agama Penajam &middot; Kab. Penajam Paser Utara &middot; Kalimantan Timur</p>
+  <p style="margin-top:.5rem;font-family:var(--mono);font-size:.7rem;color:rgba(255,255,255,0.3)">v1.0 &middot; Maret 2026 &middot; Technical Architecture Document</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
